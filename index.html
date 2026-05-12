@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI Decision Maker 升级版</title>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #fafafa; }
+    h1 { text-align: center; color: #2c3e50; }
+    .slider-group { margin: 15px 0; }
+    .slider-group label { display: block; margin-bottom: 6px; font-weight: bold; }
+    .slider-group input { width: 100%; }
+    button { background: #3498db; color: white; padding: 12px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .result { margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #ddd; }
+    .section-title { font-weight: bold; margin-top: 15px; }
+    .advice-list li { margin: 6px 0; }
+    #visual { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>AI Decision Maker 升级原型</h1>
+
+<p>请根据以下滑动条调整你的决策倾向（1=非常不同意 〜 5=非常同意）:</p>
+
+<div class="slider-group">
+    <label>风险偏好</label>
+    <input type="range" id="risk" min="1" max="5" value="3">
+</div>
+
+<div class="slider-group">
+    <label>决策速度</label>
+    <input type="range" id="speed" min="1" max="5" value="3">
+</div>
+
+<div class="slider-group">
+    <label>直觉 vs 数据</label>
+    <input type="range" id="intuition" min="1" max="5" value="3">
+</div>
+
+<div class="slider-group">
+    <label>独立 vs 协作</label>
+    <input type="range" id="collaboration" min="1" max="5" value="3">
+</div>
+
+<button onclick="runDecisionMaker()">生成领导式决策建议</button>
+
+<div id="result" class="result" style="display:none;">
+    <div class="section-title">🔍 你的决策类型</div>
+    <div id="userTypes"></div>
+
+    <div class="section-title">🧠 匹配的决策模型</div>
+    <div id="decisionModels"></div>
+
+    <div class="section-title">📊 决策可视化</div>
+    <canvas id="visual" width="400" height="250"></canvas>
+
+    <div class="section-title">🚀 明确且有力的建议（领导风格）</div>
+    <ol class="advice-list">
+        <li id="advice1"></li>
+        <li id="advice2"></li>
+        <li id="advice3"></li>
+        <li id="advice4"></li>
+    </ol>
+</div>
+
+<script>
+function runDecisionMaker() {
+    const answers = {
+        risk: +document.getElementById('risk').value,
+        speed: +document.getElementById('speed').value,
+        intuition: +document.getElementById('intuition').value,
+        collaboration: +document.getElementById('collaboration').value
+    };
+
+    // 用户类型
+    let types = [];
+    if (answers.risk >= 4) types.push("冒险型 (Risk-Taker)");
+    if (answers.speed >= 4) types.push("快速决策型 (Quick Decider)");
+    if (answers.intuition >= 4) types.push("直觉型 (Intuitive)");
+    if (answers.collaboration >= 4) types.push("协作型 (Collaborative)");
+    if (types.length === 0) types.push("分析型 (Analytical)");
+
+    // 决策模型
+    let models = [];
+    types.forEach(t => {
+        if (t.includes("分析")) models.push("Rational Decision Model（理性分析）");
+        if (t.includes("直觉") || t.includes("快速")) models.push("Intuitive Decision Model（直觉模型）");
+        if (t.includes("协作")) models.push("SWOT / Team Analysis（协作分析）");
+        if (t.includes("冒险")) models.push("Pros-Cons + Risk Evaluation（利弊/风险评估）");
+    });
+    models = [...new Set(models)];
+
+    document.getElementById('userTypes').innerText = types.join("， ");
+    document.getElementById('decisionModels').innerText = models.join("； ");
+
+    // 可视化雷达图（简单）
+    const ctx = document.getElementById('visual').getContext('2d');
+    const data = [answers.risk, answers.speed, answers.intuition, answers.collaboration];
+    ctx.clearRect(0, 0, 400, 250);
+    ctx.strokeStyle = '#3498db';
+    ctx.beginPath();
+    data.forEach((v,i) => {
+        const angle = (Math.PI*2/4) * i;
+        const radius = v/5 * 100;
+        const x = 200 + Math.cos(angle) * radius;
+        const y = 125 + Math.sin(angle) * radius;
+        if (i == 0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+        ctx.fillStyle = '#2980b9';
+        ctx.fillRect(x-3,y-3,6,6);
+    });
+    ctx.closePath();
+    ctx.stroke();
+
+    // 行动建议
+    document.getElementById('advice1').innerText = `立刻确认你的决策目标，不留任何模糊边界。`;
+    document.getElementById('advice2').innerText = `基于${models.join("、")}构建清晰的行动方案。`;
+    document.getElementById('advice3').innerText = `采用最适合你的模型来快速执行，不拖延。`;
+    document.getElementById('advice4').innerText = `在执行过程中持续监控结果，并立刻调整策略。`;
+
+    document.getElementById('result').style.display = "block";
+}
+</script>
+
+</body>
+</html>
